@@ -1,39 +1,60 @@
+"use client"
+
 import { EnvelopeIcon, FireIcon, KeyIcon, UserIcon } from "@heroicons/react/24/solid";
 import FormInput from "./components/form-input";
 import FormBtn from "./components/form-btn";
+import { useFormState } from "react-dom";
+import { formAction } from "./action/form-action";
+import { CheckBadgeIcon } from "@heroicons/react/24/outline";
+
+
+
 export default function Home() {
+  const [state, action] = useFormState(formAction, null)
   return (
     <div className="flex flex-col gap-10 py-14 px-6">
       <div className="flex items-center justify-center">
-        <FireIcon className="size-20" />
+        <FireIcon className="size-20 text-red-500" />
       </div>
 
-      <form className="flex flex-col gap-3">
+      <form action={action} className="flex flex-col gap-3">
         <FormInput
           type="email"
+          name="email"
           placeholder="Email"
           required={true}
-          icon={<EnvelopeIcon className="absolute left-4 top-1/2 size-6 -translate-y-1/2 text-gray-500" />}
+          icon={<EnvelopeIcon className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-500" />}
           errors={[]}
         />
 
         <FormInput
           type="text"
+          name="name"
           placeholder="Name"
           required={true}
-          icon={<UserIcon className="absolute left-4 top-1/2 size-6 -translate-y-1/2 text-gray-500" />}
+          icon={<UserIcon className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-500" />}
           errors={[]}
         />
 
         <FormInput
           type="password"
+          name="password"
           placeholder="Password"
           required={true}
-          icon={<KeyIcon className="absolute left-4 top-1/2 size-6 -translate-y-1/2 text-gray-500" />}
-          errors={["error!!"]}
+          icon={<KeyIcon className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-500" />}
+          errors={state?.errors ?? []}
         />
+        
 
-        <FormBtn loading={false} text="Log in" />
+        <FormBtn text="Log in" />
+
+        {state?.errors.length === 0 && (
+          <div className="flex items-center gap-2 bg-green-600 rounded-xl px-4 py-6 mt-4 font-bold ">
+              <CheckBadgeIcon className="size-6" />
+              <span>Welcome Back!</span>
+          </div>
+        )}
+        
       </form>
 
     </div>
