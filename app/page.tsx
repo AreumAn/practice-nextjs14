@@ -1,16 +1,17 @@
 "use client"
 
 import { EnvelopeIcon, FireIcon, KeyIcon, UserIcon } from "@heroicons/react/24/solid";
-import FormInput from "./components/form-input";
-import FormBtn from "./components/form-btn";
 import { useFormState } from "react-dom";
 import { formAction } from "./action/form-action";
 import { CheckBadgeIcon } from "@heroicons/react/24/outline";
+import Input from './components/input';
+import Button from './components/button';
 
 
 
 export default function Home() {
   const [state, action] = useFormState(formAction, null)
+
   return (
     <div className="flex flex-col gap-10 py-14 px-6">
       <div className="flex items-center justify-center">
@@ -18,37 +19,37 @@ export default function Home() {
       </div>
 
       <form action={action} className="flex flex-col gap-3">
-        <FormInput
+        <Input
           type="email"
           name="email"
           placeholder="Email"
           required={true}
           icon={<EnvelopeIcon className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-500" />}
-          errors={[]}
+          errors={state?.fieldErrors?.email}
         />
 
-        <FormInput
+        <Input
           type="text"
-          name="name"
-          placeholder="Name"
+          name="username"
+          placeholder="Username"
           required={true}
           icon={<UserIcon className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-500" />}
-          errors={[]}
+          errors={state?.fieldErrors?.username}
         />
 
-        <FormInput
+        <Input
           type="password"
           name="password"
           placeholder="Password"
           required={true}
           icon={<KeyIcon className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-500" />}
-          errors={state?.errors ?? []}
+          errors={state?.fieldErrors?.password}
         />
         
 
-        <FormBtn text="Log in" />
+        <Button text="Log in" />
 
-        {state?.errors.length === 0 && (
+        {state?.success === true && (
           <div className="flex items-center gap-2 bg-green-600 rounded-xl px-4 py-6 mt-4 font-bold ">
               <CheckBadgeIcon className="size-6" />
               <span>Welcome Back!</span>
