@@ -8,7 +8,6 @@ import Input from './components/input';
 import Button from './components/button';
 
 
-
 export default function Home() {
   const [state, action] = useFormState(formAction, null)
 
