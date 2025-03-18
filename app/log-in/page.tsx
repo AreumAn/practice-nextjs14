@@ -2,14 +2,12 @@
 
 import { EnvelopeIcon, FireIcon, KeyIcon, UserIcon } from "@heroicons/react/24/solid";
 import { useFormState } from "react-dom";
-import { formAction } from "../action/form-action";
-import { CheckBadgeIcon } from "@heroicons/react/24/outline";
 import Input from '../components/input';
 import Button from '../components/button';
-
+import { logIn } from "./action";
 
 export default function LogIn() {
-  const [state, action] = useFormState(formAction, null)
+  const [state, action] = useFormState(logIn, null)
 
   return (
     <div className="flex flex-col gap-10 py-14 px-6">
@@ -48,12 +46,6 @@ export default function LogIn() {
 
         <Button text="Log in" />
 
-        {state?.success === true && (
-          <div className="flex items-center gap-2 bg-green-600 rounded-xl px-4 py-6 mt-4 font-bold ">
-              <CheckBadgeIcon className="size-6" />
-              <span>Welcome Back!</span>
-          </div>
-        )}
         
       </form>
 

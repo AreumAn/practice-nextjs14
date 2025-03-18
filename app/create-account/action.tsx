@@ -2,45 +2,55 @@
 import { z } from "zod";
 import db from "../lib/db";
 import bcrypt from "bcrypt";
-import { getIronSession } from "iron-session";
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import getSession from "../lib/session";
 const checkPasswords = ({password, confirmPassword}: {password: string, confirmPassword: string }) => password === confirmPassword
 
-const checkEmail = async (email: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      email: email
-    },
-    select: {
-      id: true
-    }
-  })
-  return !Boolean(user)
-}
-
-const checkUsername = async (username: string) => {
-  const user = await db.user.findUnique({
-    where: {
-      username: username
-    },
-    select: {
-      id: true
-    }
-  })
-  return !Boolean(user)
-}
 
 const formSchema = z.object({
-  email: z.string().email().includes("@zod.com").refine(checkEmail, {
-    message: "Email already exists"
-  }),
-  username: z.string().min(5, "Username should be at least 5 characters long").refine(checkUsername, {
-    message: "Username already exists"
-  }),
+  email: z.string().email().includes("@zod.com"),
+  username: z.string().min(5, "Username should be at least 5 characters long"),
   password: z.string().min(10, "Password should be at least 10 characters long").regex(/.*[0-9].*/, "Password should contain at least one number(0123456789)"),
   confirmPassword: z.string()
-}).refine(checkPasswords, {
+  }).superRefine(async ({email}, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        email: email
+      },
+      select: {
+        id: true
+      }
+    })
+    if (user) {
+      ctx.addIssue({
+        code: "custom",
+        message: "email already exists",
+        path: ["email"],
+        fatal: true
+      })
+
+      return z.NEVER;
+    }
+  }).superRefine(async ({username}, ctx) => {
+    const user = await db.user.findUnique({
+      where: {
+        username
+      },
+      select: {
+        id: true
+      }
+    })
+    if (user) {
+      ctx.addIssue({
+        code: "custom",
+        message: "username already exists",
+        path: ["username"],
+        fatal: true
+      })
+
+      return z.NEVER;
+    }
+  }).refine(checkPasswords, {
   message: "Passwords do not match",
   path: ["confirmPassword"]
 });
@@ -68,13 +78,9 @@ export async function createAccount(prevState: any, formData: FormData) {
       }
     })
     // login user
-    const cookie = await getIronSession(cookies(), {
-      cookieName: "practice-nextjs",
-      password: process.env.COOKIE_PASSWORD!
-    })
-    // @ts-ignore
-    cookie.id = user.id
-    await cookie.save()
+    const session = await getSession()
+    session.id = user.id
+    await session.save()
     redirect("/profile")
   }
   
