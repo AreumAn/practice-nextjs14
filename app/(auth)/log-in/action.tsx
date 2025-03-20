@@ -1,8 +1,8 @@
 "use server"
 import { z } from "zod";
-import db from "../lib/db";
+import db from "../../lib/db";
 import bcrypt from "bcrypt";
-import getSession from "../lib/session";
+import getSession from "../../lib/session";
 import { redirect } from "next/navigation";
 
 const formSchema = z.object({

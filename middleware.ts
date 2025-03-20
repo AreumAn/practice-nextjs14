@@ -6,7 +6,6 @@ interface PublicRoutes {
 }
 
 const publicRoutes : PublicRoutes= {
-  "/": true,
   "/log-in": true,
   "/create-account": true,
 }
@@ -17,7 +16,7 @@ export default async function middleware(request: NextRequest) {
   if(!session.id) {
     // logged out
     if(!isPublic) {
-      return NextResponse.redirect(new URL("/", request.url))
+      return NextResponse.redirect(new URL("/log-in", request.url))
     }
   } else {
     // logged in

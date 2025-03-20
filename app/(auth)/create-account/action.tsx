@@ -1,9 +1,9 @@
 "use server"
 import { z } from "zod";
-import db from "../lib/db";
+import db from "@/app/lib/db";
 import bcrypt from "bcrypt";
 import { redirect } from "next/navigation";
-import getSession from "../lib/session";
+import getSession from "@/app/lib/session";
 const checkPasswords = ({password, confirmPassword}: {password: string, confirmPassword: string }) => password === confirmPassword
 
 

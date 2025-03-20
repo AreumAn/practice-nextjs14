@@ -2,9 +2,10 @@
 
 import { EnvelopeIcon, FireIcon, KeyIcon, UserIcon } from "@heroicons/react/24/solid";
 import { useFormState } from "react-dom";
-import Input from '../components/input';
-import Button from '../components/button';
+import Input from '../../components/input';
+import Button from '../../components/button';
 import { logIn } from "./action";
+import Link from "next/link";
 
 export default function LogIn() {
   const [state, action] = useFormState(logIn, null)
@@ -45,9 +46,14 @@ export default function LogIn() {
         
 
         <Button text="Log in" />
-
-        
       </form>
+
+      <span className="px-4 py-3">
+        <span className="text-gray-500">You don&apos;t have an account? </span>
+        <Link href="/create-account" className="text-red-500 underline font-bold">
+          Sign up
+        </Link>
+      </span>
 
     </div>
   );

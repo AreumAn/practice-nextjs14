@@ -3,8 +3,8 @@
 import { EnvelopeIcon, FireIcon, KeyIcon, UserIcon } from "@heroicons/react/24/solid";
 import { useFormState } from "react-dom";
 import { createAccount } from "./action";
-import Input from '../components/input';
-import Button from '../components/button';
+import Input from '@/app/components/input';
+import Button from '@/app/components/button';
 
 
 export default function CreateAccount() {
