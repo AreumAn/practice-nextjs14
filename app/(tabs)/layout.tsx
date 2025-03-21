@@ -1,10 +1,14 @@
-import TabBar from "../components/tab-bar";
+import TabBar from "@/app/components/tab-bar";
+import TopLogo from "@/app/components/top-logo";
 
 export default function Layout({children}: {children: React.ReactNode}) {
   return (
-    <div>
-      {children}
+    <>
+      <TopLogo />
+      <div className="py-24 px-4">
+        {children}
+      </div>
       <TabBar />
-    </div>
+    </>
   )
 }

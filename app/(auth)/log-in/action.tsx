@@ -72,7 +72,7 @@ export async function logIn(prevState: any, formData: FormData) {
     session.id = user.id
     await session.save()
     // redirect to profile
-    redirect("/profile")
+    redirect("/")
   }
   
   

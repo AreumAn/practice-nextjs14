@@ -31,11 +31,11 @@ export default async function Profile() {
     redirect("/")
   }
 
-  return <div>
+  return <div className="flex flex-col gap-4 text-white">
     <h1>Welcome! {session.username}</h1>
     <p>Your email is {session.email}</p>
     <form action={logOut}>
-      <button className="bg-gray-200 rounded-md px-4 py-3 font-bold">Log out</button>
+      <button className="bg-neutral-500 rounded-md px-4 py-3 font-bold text-black">Log out</button>
     </form>
   </div>;
 }

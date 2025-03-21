@@ -1,16 +1,37 @@
-"use client"
+import db from "@/app/lib/db"
+import { Prisma } from "@prisma/client";
+import { TWEETS_PER_PAGE } from "../lib/constants";
+import TweetList from "../components/tweet-list";
 
-import { FireIcon } from "@heroicons/react/24/solid";
+async function getInitialTweets() {
+  const tweets = await db.tweet.findMany({
+    select: {
+      id: true,
+      tweet: true,
+      create_at: true,
+      user: {
+        select: {
+          id: true,
+          username: true
+        }
+      }
+    },
+    take: TWEETS_PER_PAGE,
+    orderBy: {
+      create_at: "desc"
+    }
+  })
+  return tweets
+}
 
+export type InitialTweets = Prisma.PromiseReturnType<typeof getInitialTweets>
 
-
-export default function Home() {
+export default async function Home() {
+  const initialTweets = await getInitialTweets()
 
   return (
-    <div className="flex flex-col gap-10 py-14 px-6">
-      <div className="flex items-center justify-center">
-        <FireIcon className="size-20 text-red-500" />
-      </div>
+    <div className="text-white">
+      <TweetList initialTweets={initialTweets} />
     </div>
   );
 }
