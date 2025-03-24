@@ -4,6 +4,7 @@ import { redirect } from 'next/navigation';
 import { z } from "zod";
 import getSession from "@/app/lib/session";
 import db from "@/app/lib/db";
+import { revalidatePath } from 'next/cache';
 
 const formSchema = z.object({
   tweet: z.string().min(1, "Tweet should be at least 1 character long").max(140, "Tweet should be less than 140 characters"),
@@ -35,6 +36,8 @@ export async function addTweet(prevState: any, formData: FormData) {
       },
       
     });
-    redirect(`/tweet/${tweet.id}`);
+    if(tweet) {
+      return { fieldErrors: null };
+    }
   }
 }

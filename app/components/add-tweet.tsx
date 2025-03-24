@@ -3,9 +3,16 @@
 import { useFormState } from 'react-dom';
 import { addTweet } from '../actions/add-tweet';
 import ButtonSm from './button-sm';
+import { useEffect } from 'react';
 
-export default function AddTweet() {
+export default function AddTweet({ onNewTweetAdded }: { onNewTweetAdded: () => void }) {
   const [state, action] = useFormState(addTweet, null);
+
+  useEffect(() => {
+    if (state && !state.fieldErrors) {
+      onNewTweetAdded();
+    }
+  }, [state, onNewTweetAdded]);
 
   const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const textarea = e.target;

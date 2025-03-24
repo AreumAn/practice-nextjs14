@@ -6,6 +6,7 @@ import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid"
 import { useEffect, useState } from "react"
 import { getTweetsByPage } from "@/app/(tabs)/action"
 import { TWEETS_PER_PAGE } from "../lib/constants"
+import AddTweet from './add-tweet'
 
 interface TweetListProps {
   initialTweets: InitialTweets
@@ -29,8 +30,13 @@ export default function TweetList({initialTweets}: TweetListProps) {
 
   const isFirstPage = page === 0
 
+  const handleNewTweetAdded = () => {
+    window.location.reload()
+  }
+
   return (
     <div className="flex flex-col gap-10">
+      <AddTweet onNewTweetAdded={handleNewTweetAdded} />
       {tweets.map((tweet) => (
         <ListProduct key={tweet.id} tweet={tweet} />
       ))}

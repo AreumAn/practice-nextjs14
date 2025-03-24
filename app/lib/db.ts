@@ -13,7 +13,6 @@ async function test() {
     },
   });
 
-  console.log(user);
 }
 
 test();
