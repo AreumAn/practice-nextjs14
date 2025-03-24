@@ -38,7 +38,7 @@ export default function TweetList({initialTweets}: TweetListProps) {
   }, [])
 
   return (
-    <div className="flex flex-col gap-10">
+    <div className="flex flex-col gap-8">
       <AddTweet onNewTweetAdded={handleNewTweetAdded} />
       {tweets.map((tweet) => (
         <ListProduct key={tweet.id} tweet={tweet} />

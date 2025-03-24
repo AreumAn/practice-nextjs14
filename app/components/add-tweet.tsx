@@ -28,7 +28,7 @@ export default function AddTweet({ onNewTweetAdded }: { onNewTweetAdded: () => v
 
   return (
     <>
-      <form action={action} className="flex flex-col gap-2 mb-10">
+      <form action={action} className="flex flex-col gap-2 mb-2">
         <div className="flex flex-col gap-1">
           <textarea 
             ref={textAreaRef}
