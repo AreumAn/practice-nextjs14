@@ -24,7 +24,7 @@ export async function addTweet(prevState: any, formData: FormData) {
   if (!result.success) {
     return result.error.flatten()
   } else {
-    await db.tweet.create({
+    const tweet = await db.tweet.create({
       data: {
         tweet: result.data.tweet,
         user: {
@@ -33,8 +33,8 @@ export async function addTweet(prevState: any, formData: FormData) {
           },
         },
       },
+      
     });
-    redirect('/');
-    return { fieldErrors: null };
+    redirect(`/tweet/${tweet.id}`);
   }
 }
