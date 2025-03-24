@@ -3,7 +3,7 @@
 import { InitialTweets } from "@/app/(tabs)/page"
 import ListProduct from "@/app/components/list-tweet"
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/solid"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { getTweetsByPage } from "@/app/(tabs)/action"
 import { TWEETS_PER_PAGE } from "../lib/constants"
 import AddTweet from './add-tweet'
@@ -11,6 +11,7 @@ import AddTweet from './add-tweet'
 interface TweetListProps {
   initialTweets: InitialTweets
 }
+
 
 export default function TweetList({initialTweets}: TweetListProps) {
   const [tweets, setTweets] = useState(initialTweets)
@@ -25,14 +26,16 @@ export default function TweetList({initialTweets}: TweetListProps) {
       setHasNextPage(hasNext)
     }
     getTweetsbyPage()
-
   }, [page])
 
   const isFirstPage = page === 0
 
-  const handleNewTweetAdded = () => {
-    window.location.reload()
-  }
+  const handleNewTweetAdded = useCallback(async () => {
+    const fetchedTweets = await getTweetsByPage(0)
+    const hasNext = fetchedTweets.length > TWEETS_PER_PAGE
+    setTweets(fetchedTweets.slice(0, TWEETS_PER_PAGE))
+    setHasNextPage(hasNext)
+  }, [])
 
   return (
     <div className="flex flex-col gap-10">
