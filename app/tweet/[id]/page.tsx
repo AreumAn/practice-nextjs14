@@ -1,13 +1,14 @@
 import ButtonSm from "@/app/components/button-sm"
-import db from "@/app/lib/db"
 import getSession from "@/app/lib/session"
 import { formatDate } from "@/app/lib/utils"
-import { HeartIcon as HeartIconOutline } from "@heroicons/react/24/outline"
-import { HeartIcon as HeartIconSolid, UserCircleIcon } from "@heroicons/react/24/solid"
+
 import { notFound, redirect } from "next/navigation"
+import db from "@/app/lib/db"
+import LikeButton from "@/app/components/like-button"
+import { UserCircleIcon } from "@heroicons/react/24/solid"
+import { unstable_cache as nextCache } from "next/cache"
 
-
-async function getTweet(id: string) {
+async function getTweet(id: number) {
   const tweet = await db.tweet.findUnique({
     select: {
       id: true,
@@ -20,40 +21,57 @@ async function getTweet(id: string) {
           username: true
         }
       },
-      likes: {
-        select: {
-          user: {
-            select: {
-              id: true,
-              username: true
-            }
-          }
-        }
-      }
     },
     where: {
-      id: Number(id)
+      id: id
     }
   })
   return tweet
 }
 
+async function getLikeStatus(tweet_id: number, session_id: number) {
+  const isLiked = await db.like.findUnique({
+    where: {
+      id: {
+        user_id: session_id,
+        tweet_id,
+      }
+    }
+  })
+  const likes = await db.like.count({
+    where: {
+      tweet_id,
+    }
+  })
+  return { isLiked: Boolean(isLiked), likes }
+}
+
+function getCachedLikeStatus(tweet_id: number, session_id: number) {
+  const cached = nextCache(getLikeStatus, ['tweet-like-status'], {
+    tags: [`tweet-like-status-${tweet_id}`],
+  })
+  return cached(tweet_id, session_id)
+}
+
 
 export default async function TweetDetails({params: {id}}: {params: {id: string}}) {
-  const tweet = await getTweet(id)
+  const tweet_id = Number(id)
+
+  const tweet = await getTweet(tweet_id)
   if (!tweet) {
     return notFound()
   }
   const session = await getSession()
   const isOwner = session?.id === tweet.user_id
-  const isLiked = tweet.likes.some((like) => like.user.id === session?.id)
+
+  const { isLiked, likes } = await getCachedLikeStatus(tweet_id, session.id!)
+
 
   const handleDeleteTweet = async() => {
     "use server"
-    await new Promise((resolve) => setTimeout(resolve, 2000))
     await db.tweet.delete({
       where: {
-        id: Number(id)
+        id: tweet_id
       }
     })
     redirect("/")
@@ -74,12 +92,7 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
         <hr className="border-gray-200" />
         <div className="flex items-center gap-2 justify-between">
           <div className="flex justify-center items-center gap-px">
-            {isLiked ? (
-              <HeartIconSolid className="w-6 h-6 text-red-500" />
-            ) : (
-              <HeartIconOutline className="w-6 h-6" />
-            )}
-            <span className="text-gray-200 text-sm">{tweet.likes.length}</span>
+            <LikeButton isLiked={isLiked} likes={likes} tweet_id={tweet_id} />
           </div>
           {isOwner && (
             <form action={handleDeleteTweet}>
