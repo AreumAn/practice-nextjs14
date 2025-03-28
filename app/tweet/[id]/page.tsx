@@ -1,9 +1,10 @@
+import ButtonSm from "@/app/components/button-sm"
 import db from "@/app/lib/db"
 import getSession from "@/app/lib/session"
 import { formatDate } from "@/app/lib/utils"
 import { HeartIcon as HeartIconOutline } from "@heroicons/react/24/outline"
 import { HeartIcon as HeartIconSolid, UserCircleIcon } from "@heroicons/react/24/solid"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 
 async function getTweet(id: string) {
@@ -47,6 +48,17 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
   const isOwner = session?.id === tweet.user_id
   const isLiked = tweet.likes.some((like) => like.user.id === session?.id)
 
+  const handleDeleteTweet = async() => {
+    "use server"
+    await new Promise((resolve) => setTimeout(resolve, 2000))
+    await db.tweet.delete({
+      where: {
+        id: Number(id)
+      }
+    })
+    redirect("/")
+  }
+
   return (
     <div className="my-10 mx-4 flex flex-col gap-10 p-2 text-white border-gray-200 border rounded-lg">
       <div className="flex flex-col gap-4">
@@ -70,7 +82,9 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
             <span className="text-gray-200 text-sm">{tweet.likes.length}</span>
           </div>
           {isOwner && (
-            <button className="text-gray-200 text-sm bg-red-500 rounded-md px-2 py-1">Delete</button>
+            <form action={handleDeleteTweet}>
+              <ButtonSm text="Delete" style="warning" pendingText="Deleting..." />
+            </form>
           )}
         </div>
       </div>
