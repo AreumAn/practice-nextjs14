@@ -1,1 +1,1 @@
-export const TWEETS_PER_PAGE = 5
+export const TWEETS_PER_PAGE = 3

@@ -7,6 +7,7 @@ import db from "@/app/lib/db"
 import LikeButton from "@/app/components/like-button"
 import { UserCircleIcon } from "@heroicons/react/24/solid"
 import { unstable_cache as nextCache } from "next/cache"
+import { ChatBubbleBottomCenterIcon, TrashIcon } from "@heroicons/react/24/outline"
 
 async function getTweet(id: number) {
   const tweet = await db.tweet.findUnique({
@@ -53,6 +54,29 @@ function getCachedLikeStatus(tweet_id: number, session_id: number) {
   return cached(tweet_id, session_id)
 }
 
+async function getResponses(tweet_id:number) {
+  const responses = await db.response.findMany({
+    where: {
+      tweet_id
+    },
+    orderBy: {
+      create_at: "desc"
+    },
+    select: {
+      id: true,
+      response: true,
+      create_at: true,
+      user_id: true,
+      user: {
+        select: {
+          id: true,
+          username: true
+        }
+      }
+    }
+  })
+  return responses
+}
 
 export default async function TweetDetails({params: {id}}: {params: {id: string}}) {
   const tweet_id = Number(id)
@@ -66,6 +90,9 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
 
   const { isLiked, likes } = await getCachedLikeStatus(tweet_id, session.id!)
 
+  const responses = await getResponses(tweet_id)
+  console.log(responses)
+
 
   const handleDeleteTweet = async() => {
     "use server"
@@ -77,8 +104,9 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
     redirect("/")
   }
 
+
   return (
-    <div className="my-10 mx-4 flex flex-col gap-10 p-2 text-white border-gray-200 border rounded-lg">
+    <div className="my-10 mx-4 flex flex-col gap-2 p-2 text-white">
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           <UserCircleIcon className="w-10 h-10" />
@@ -88,18 +116,42 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
         <div className="text-lg">{tweet.tweet}</div>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <hr className="border-gray-200" />
+      <div className="flex flex-col gap-4 border-neutral-600 border-b py-4">
         <div className="flex items-center gap-2 justify-between">
-          <div className="flex justify-center items-center gap-px">
+          <div className="flex justify-center items-center gap-4">
             <LikeButton isLiked={isLiked} likes={likes} tweet_id={tweet_id} />
+            <div className="flex justify-center items-center gap-2">
+              <ChatBubbleBottomCenterIcon className="w-6 h-6" />
+              {responses.length}
+            </div>
           </div>
+          
           {isOwner && (
             <form action={handleDeleteTweet}>
               <ButtonSm text="Delete" style="warning" pendingText="Deleting..." />
             </form>
           )}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-4 text-neutral-300">
+        {responses.map((response) => (
+          <div key={response.id} className="flex flex-col">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <UserCircleIcon className="w-6 h-6 mt-2" />
+                <span className="text-lg font-bold">{response.user.username}</span>
+                <span className="text-gray-500 text-sm">{formatDate(response.create_at)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {session?.id === response.user_id && (
+                  <TrashIcon className="w-6 h-6" />
+                )}
+              </div>
+            </div>
+            <div className="ml-8 text-lg">{response.response}</div>
+          </div>
+        ))}
       </div>
     </div>
   )
