@@ -8,6 +8,8 @@ import LikeButton from "@/app/components/like-button"
 import { UserCircleIcon } from "@heroicons/react/24/solid"
 import { unstable_cache as nextCache } from "next/cache"
 import { ChatBubbleBottomCenterIcon, TrashIcon } from "@heroicons/react/24/outline"
+import Response from "@/app/components/response"
+import { Prisma } from "@prisma/client"
 
 async function getTweet(id: number) {
   const tweet = await db.tweet.findUnique({
@@ -78,6 +80,8 @@ async function getResponses(tweet_id:number) {
   return responses
 }
 
+export type ResponseType = Prisma.PromiseReturnType<typeof getResponses>[number]
+
 export default async function TweetDetails({params: {id}}: {params: {id: string}}) {
   const tweet_id = Number(id)
 
@@ -133,26 +137,7 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
           )}
         </div>
       </div>
-
-      <div className="flex flex-col gap-4 text-neutral-300">
-        {responses.map((response) => (
-          <div key={response.id} className="flex flex-col">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <UserCircleIcon className="w-6 h-6 mt-2" />
-                <span className="text-lg font-bold">{response.user.username}</span>
-                <span className="text-gray-500 text-sm">{formatDate(response.create_at)}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                {session?.id === response.user_id && (
-                  <TrashIcon className="w-6 h-6" />
-                )}
-              </div>
-            </div>
-            <div className="ml-8 text-lg">{response.response}</div>
-          </div>
-        ))}
-      </div>
+      <Response responses={responses} session_id={session.id!} tweet_id={tweet_id} />
     </div>
   )
 }
