@@ -2,7 +2,7 @@
 
 import db from "@/app/lib/db"
 import getSession from "@/app/lib/session"
-import { revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { z } from "zod";
 
 
@@ -56,10 +56,10 @@ export async function addResponse(prevState: any, formData: FormData) {
   const result = formSchema.safeParse(data)
 
   if (!result.success) {
-    console.log(result.error.flatten())
     return result.error.flatten()
   } else {
     const session = await getSession();
+    await new Promise(resolve => setTimeout(resolve, 3000))
     await db.response.create({
       data: {
         response: result.data.response,
@@ -67,7 +67,7 @@ export async function addResponse(prevState: any, formData: FormData) {
         tweet_id: data.tweet_id
       }
     })
+    revalidatePath(`/tweet/${data.tweet_id}`)
   }
 
-  console.log(data)
 }

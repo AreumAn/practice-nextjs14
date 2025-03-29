@@ -6,22 +6,51 @@ import { formatDate } from "../lib/utils"
 import { ResponseType } from "../tweet/[id]/page"
 import { addResponse } from "../tweet/[id]/action"
 import { useFormState } from "react-dom"
+import { startTransition, useOptimistic, useRef } from 'react'
 
 interface ResponseProps {
   responses: ResponseType[]
   session_id: number
+  session_username: string
   tweet_id: number
 }
 
 
-export default function Response({responses, session_id, tweet_id}: ResponseProps) {
+export default function Response({responses, session_id, session_username, tweet_id}: ResponseProps) {
   const [state, action] = useFormState(addResponse, null)
+  const responseInputRef = useRef<HTMLInputElement>(null)
+  const [responseState, reducerFn] = useOptimistic(
+    responses,
+    (previousState: ResponseType[], payload: ResponseType) => {
+      return [payload, ...previousState]
+    }
+  )
+
+  const addResponseAction = async (formData: FormData) => {
+    startTransition(() => {
+      reducerFn({
+        response: formData.get('response') as string,
+        id: -Date.now(),
+        create_at: new Date(),
+        user_id: session_id!,
+        user: {
+          id: session_id!,
+          username: session_username!
+        }
+      });
+    });
+    await action(formData);
+    if (responseInputRef.current) {
+      responseInputRef.current.value = '';
+    }
+  }
   return (
       <div className="flex flex-col gap-4 text-neutral-300">
-        <form action={action} className="flex flex-col gap-2">
+        <form action={addResponseAction} className="flex flex-col gap-2">
           <input type="hidden" name="tweet_id" value={tweet_id} />
           <div className="flex gap-2">
             <input 
+              ref={responseInputRef}
               type="text"
               name="response"
               placeholder="Add a response" 
@@ -34,8 +63,8 @@ export default function Response({responses, session_id, tweet_id}: ResponseProp
             <div className="text-red-500 w-full">{state.fieldErrors.response[0]}</div>
           )}
         </form>
-        {responses.map((response) => (
-          <div key={response.id} className="flex flex-col">
+        {responseState.map((response) => (
+          <div key={response.id || -Date.now()} className="flex flex-col">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <UserCircleIcon className="w-6 h-6 mt-2" />

@@ -80,6 +80,7 @@ export async function createAccount(prevState: any, formData: FormData) {
     // login user
     const session = await getSession()
     session.id = user.id
+    session.username = user.username
     await session.save()
     redirect("/profile")
   }

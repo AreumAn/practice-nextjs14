@@ -137,7 +137,7 @@ export default async function TweetDetails({params: {id}}: {params: {id: string}
           )}
         </div>
       </div>
-      <Response responses={responses} session_id={session.id!} tweet_id={tweet_id} />
+      <Response responses={responses} session_id={session.id!} session_username={session.username!} tweet_id={tweet_id} />
     </div>
   )
 }
