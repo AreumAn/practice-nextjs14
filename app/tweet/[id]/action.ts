@@ -59,7 +59,6 @@ export async function addResponse(prevState: any, formData: FormData) {
     return result.error.flatten()
   } else {
     const session = await getSession();
-    await new Promise(resolve => setTimeout(resolve, 3000))
     await db.response.create({
       data: {
         response: result.data.response,
@@ -70,4 +69,14 @@ export async function addResponse(prevState: any, formData: FormData) {
     revalidatePath(`/tweet/${data.tweet_id}`)
   }
 
+}
+
+export async function deleteResponse(response_id: number, tweet_id: number) {
+  await db.response.delete({
+    where: {
+      id: response_id
+    }
+  })
+
+  revalidatePath(`/tweet/${tweet_id}`)
 }

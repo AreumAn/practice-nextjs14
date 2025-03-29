@@ -4,7 +4,7 @@ import { PlusCircleIcon, UserCircleIcon } from "@heroicons/react/24/outline"
 import { TrashIcon } from "@heroicons/react/24/outline"
 import { formatDate } from "../lib/utils"
 import { ResponseType } from "../tweet/[id]/page"
-import { addResponse } from "../tweet/[id]/action"
+import { addResponse, deleteResponse } from "../tweet/[id]/action"
 import { useFormState } from "react-dom"
 import { startTransition, useOptimistic, useRef } from 'react'
 
@@ -15,27 +15,39 @@ interface ResponseProps {
   tweet_id: number
 }
 
+type OptimisticAction = 
+  | { type: 'add'; response: ResponseType }
+  | { type: 'delete'; id: number }
+
 
 export default function Response({responses, session_id, session_username, tweet_id}: ResponseProps) {
   const [state, action] = useFormState(addResponse, null)
   const responseInputRef = useRef<HTMLInputElement>(null)
   const [responseState, reducerFn] = useOptimistic(
     responses,
-    (previousState: ResponseType[], payload: ResponseType) => {
-      return [payload, ...previousState]
+    (previousState: ResponseType[], payload: OptimisticAction) => {
+      switch (payload.type) {
+        case 'add':
+          return [payload.response, ...previousState]
+        case 'delete':
+          return previousState.filter(response => response.id !== payload.id)
+      }
     }
   )
 
   const addResponseAction = async (formData: FormData) => {
     startTransition(() => {
       reducerFn({
-        response: formData.get('response') as string,
-        id: -Date.now(),
-        create_at: new Date(),
-        user_id: session_id!,
-        user: {
-          id: session_id!,
-          username: session_username!
+        type: 'add',
+        response: {
+          response: formData.get('response') as string,
+          id: -Date.now(),
+          create_at: new Date(),
+          user_id: session_id!,
+          user: {
+            id: session_id!,
+            username: session_username!
+          }
         }
       });
     });
@@ -44,6 +56,17 @@ export default function Response({responses, session_id, session_username, tweet
       responseInputRef.current.value = '';
     }
   }
+
+  const handleDelete = async (response_id: number, tweet_id: number) => {
+    startTransition(() => {
+      reducerFn({
+        type: 'delete',
+        id: response_id
+      });
+    });
+    await deleteResponse(response_id, tweet_id);
+  }
+
   return (
       <div className="flex flex-col gap-4 text-neutral-300">
         <form action={addResponseAction} className="flex flex-col gap-2">
@@ -71,11 +94,11 @@ export default function Response({responses, session_id, session_username, tweet
                 <span className="text-lg font-bold">{response.user.username}</span>
                 <span className="text-gray-500 text-sm">{formatDate(response.create_at)}</span>
               </div>
-              <div className="flex items-center gap-2">
+              <button onClick={() => handleDelete(response.id, tweet_id)} className="flex items-center gap-2">
                 {session_id === response.user_id && (
                   <TrashIcon className="w-6 h-6" />
                 )}
-              </div>
+              </button>
             </div>
             <div className="ml-8 text-lg">{response.response}</div>
           </div>
